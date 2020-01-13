@@ -14,12 +14,14 @@
 # included in all copies or substantial portions of the Software.
 
 import logging
+from urllib.parse import urlencode
 
 from requests_oauthlib import OAuth1Session
 from requests_oauthlib.oauth1_session import (TokenRequestDenied, TokenMissing,
                                               VerifierMissing)
 
 import beatport
+from beatport.resources import Track, Artist, Chart, Genre, Label, MusicalKey, Release
 
 AUTH_ERRORS = (TokenRequestDenied, TokenMissing, VerifierMissing)
 
@@ -30,6 +32,17 @@ class Client:
     api_version = "3"
     access_token = None
     access_secret = None
+
+    resource_types = {
+        "artist": Artist,
+        "chart": Chart,
+        "genre": Genre,
+        "label": Label,
+        "musical_key": MusicalKey,
+        "search": None,
+        "release": Release,
+        "track": Track
+    }
 
     def __init__(self, api_key, api_secret, **kwargs):
         """ Initiate the client with OAuth information.
@@ -126,3 +139,78 @@ class Client:
         Get the http prefix for the address depending on the use_ssl attribute
         """
         return "https" if self.use_ssl else "http"
+
+    def _process_json(self, item, parent=None):
+        """
+        Recursively convert dictionary
+        to :class:`~deezer.resources.Resource` object
+        :returns: instance of :class:`~deezer.resources.Resource`
+        """
+        if "data" in item:
+            return [self._process_json(i, parent) for i in item["data"]]
+
+        result = {}
+        for key, value in item.items():
+            if isinstance(value, dict) and ("type" in value or "data" in value):
+                value = self._process_json(value, parent)
+            result[key] = value
+        if parent is not None and hasattr(parent, "type"):
+            result[parent.type] = parent
+
+        if "type" in result:
+            object_class = self.objects_types[result["type"]]
+        else:
+            object_class = self.objects_types[parent]
+        return object_class(self, result)
+
+    def object_url(self, object_t, object_id=None, relation=None, **kwargs):
+        """
+        Helper method to build the url to query to access the object
+        passed as parameter
+        :raises TypeError: if the object type is invalid
+        """
+        if object_t not in self.objects_types:
+            raise TypeError("{} is not a valid type".format(object_t))
+        request_items = (
+            str(item) for item in [object_t, object_id, relation] if item is not None
+        )
+        request = "/".join(request_items)
+        base_url = self.url(request)
+        if self.access_token is not None:
+            kwargs["access_token"] = str(self.access_token)
+        if kwargs:
+            for key, value in kwargs.items():
+                if not isinstance(value, str):
+                    kwargs[key] = str(value)
+            result = "{}?{}".format(base_url, urlencode(kwargs))
+        else:
+            result = base_url
+        return result
+
+    def get_object(
+            self, object_t, object_id=None, relation=None, parent=None, **kwargs
+    ):
+        """
+        Actually query the Deezer API to retrieve the object
+        :param object_t:
+        :param object_id:
+        :param relation:
+        :param parent:
+        :param kwargs:
+        :returns: json dictionary
+        """
+        url = self.object_url(object_t, object_id, relation, **kwargs)
+        response = self.session.get(url)
+        json = response.json()
+        if "error" in json:
+            raise ValueError(
+                "API request return error for object: %s id: %s" % (object_t, object_id)
+            )
+        return self._process_json(json, parent)
+
+    def get_track(self, track_id):
+        """
+        Get the track with the provided id
+        :returns: a :class:`~deezer.resources.Track` object
+        """
+        return self.get_object("track", track_id)
