@@ -1,0 +1,30 @@
+from setuptools import setup
+
+setup(
+    name='beatport-python',
+    version='0.1.0',
+    packages=['requests_oauthlib'],
+    install_requires=['requests_oauthlib'],
+    url='https://github.com/oier26/beatport-python',
+    license='MIT',
+    author='Oier Arroniz',
+    author_email='oier_26@hotmail.com',
+    description='A wrapper library for the Beatport API',
+    classifiers=[
+        "Development Status :: 1 - Planning",
+        'Environment :: Console',
+        'Topic :: Multimedia :: Sound/Audio',
+        "Intended Audience :: Developers",
+        "Natural Language :: English",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
+)
