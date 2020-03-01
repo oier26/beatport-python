@@ -16,7 +16,7 @@
 import logging
 from urllib.parse import urlencode
 
-from requests_oauthlib import OAuth1Session
+import requests_oauthlib
 from requests_oauthlib.oauth1_session import (TokenRequestDenied, TokenMissing,
                                               VerifierMissing)
 
@@ -54,12 +54,13 @@ class Client:
         """
         super().__init__()
 
+        self.objects_types = None
         self.api_key = api_key
         self.api_secret = api_secret
         self.access_token = kwargs.get("access_token", None)
         self.access_secret = kwargs.get("access_secret", None)
 
-        self.session = OAuth1Session(
+        self.session = requests_oauthlib.OAuth1Session(
             client_key=self.api_key, client_secret=self.api_secret,
             resource_owner_key=self.access_token,
             resource_owner_secret=self.access_secret,
@@ -95,7 +96,7 @@ class Client:
         :param auth_response: URL-encoded authorization data as displayed at
                               the authorization url (obtained via
                               :py:meth:`get_authorize_url`) after signing in
-        :type auth_data:      unicode
+        :type auth_response:  unicode
         :returns:             OAuth resource owner key and secret
         :rtype:               (unicode, unicode) tuple
         """
@@ -175,7 +176,7 @@ class Client:
             str(item) for item in [object_t, object_id, relation] if item is not None
         )
         request = "/".join(request_items)
-        base_url = self.url(request)
+        base_url = self.make_url(request)
         if self.access_token is not None:
             kwargs["access_token"] = str(self.access_token)
         if kwargs:
@@ -191,7 +192,7 @@ class Client:
             self, object_t, object_id=None, relation=None, parent=None, **kwargs
     ):
         """
-        Actually query the Deezer API to retrieve the object
+        Actually query the Beatport API to retrieve the object
         :param object_t:
         :param object_id:
         :param relation:
@@ -211,6 +212,7 @@ class Client:
     def get_track(self, track_id):
         """
         Get the track with the provided id
-        :returns: a :class:`~deezer.resources.Track` object
+        :param track_id: Identifier of the track in Beatport
+        :return: `~deezer.resources.Track` object
         """
         return self.get_object("track", track_id)

@@ -46,9 +46,9 @@ class Resource:
         for key in self._fields:
             value = getattr(self, key)
             if isinstance(value, list):
-                value = [i.asdict() if isinstance(i, Resource) else i for i in value]
+                value = [i.as_dict() if isinstance(i, Resource) else i for i in value]
             if isinstance(value, Resource):
-                value = value.asdict()
+                value = value.as_dict()
             result[key] = value
         return result
 
@@ -60,12 +60,11 @@ class Resource:
         is not meant to be used directly by a client, it's more
         a helper method for the child objects.
         """
-        # pylint: disable=E1101
         index = 0
         while 1:
             items = self.get_relation(relation, index=index, **kwargs)
             for item in items:
-                yield (item)
+                yield item
 
             if len(items) == 0:
                 break
@@ -73,40 +72,49 @@ class Resource:
 
 
 class Artist(Resource):
+    artists = None
+
     def get_artists(self):
         return self.artists
 
 
 class Chart(Resource):
-    def get_artists(self):
-        return self.artists
+    charts = None
+
+    def get_charts(self):
+        return self.charts
 
 
 class Genre(Resource):
-    def get_artists(self):
-        return self.artists
+    genres = None
+
+    def get_genres(self):
+        return self.genres
 
 
 class Label(Resource):
-    def get_artists(self):
-        return self.artists
+    labels = None
+
+    def get_labels(self):
+        return self.labels
 
 
 class MusicalKey(Resource):
-    def get_artists(self):
-        return self.artists
+    musical_keys = None
+
+    def get_musical_keys(self):
+        return self.musical_keys
 
 
 class Release(Resource):
-    def get_artists(self):
-        return self.artists
+    releases = None
+
+    def get_releases(self):
+        return self.releases
 
 
 class Track(Resource):
-    def get_artists(self):
-        return self.artists
+    tracks = None
 
-
-class Track(Resource):
-    def get_artists(self):
-        return self.artists
+    def get_tracks(self):
+        return self.tracks
