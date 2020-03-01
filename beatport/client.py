@@ -13,6 +13,10 @@
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
 
+"""
+Python Beatport API <https://oauth-api.beatport.com> Wrapper.
+"""
+
 import logging
 from urllib.parse import urlencode
 
