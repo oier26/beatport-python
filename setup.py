@@ -1,6 +1,6 @@
-from setuptools import setup
+import setuptools
 
-setup(
+setuptools.setup(
     name='beatport-python',
     version='0.1.0',
     packages=['requests_oauthlib'],
