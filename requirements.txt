@@ -1,1 +1,3 @@
+mediafile
+pytest
 requests_oauthlib
